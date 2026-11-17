@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "MarketplaceFederationRegistry",
+  "controlPlane": {
+    "repository": "shawn2024bellazan-prog/Everything-as-Agent-rebuild",
+    "compositionHost": "Aspire",
+    "agentFramework": "Microsoft Agent Framework",
+    "governance": "Microsoft Agent Governance Toolkit",
+    "lifecycle": "PMCR-O",
+    "supportedRuntimes": ["dotnet", "python"]
+  },
+  "policy": {
+    "discoverBeforeCreate": true,
+    "duplicateCreation": "deny",
+    "childAgentsMayRunFullCycles": true,
+    "authoritativeAuditOwner": "AGT",
+    "pmcroPhases": [
+      "orchestrate",
+      "plan",
+      "make",
+      "check",
+      "reflect"
+    ]
+  },
+  "marketplaces": [
+    {
+      "id": "pmcro-agent",
+      "repository": "pmcr-o/pmcro-agent",
+      "branch": "main",
+      "manifest": ".agents/plugins/marketplace.json",
+      "authority": "external",
+      "status": "verified",
+      "pluginCount": 8,
+      "plugins": [
+        "pmcro",
+        "pmcro-checker",
+        "pmcro-governance",
+        "pmcro-maker",
+        "pmcro-orchestrator",
+        "pmcro-planner",
+        "pmcro-reflector",
+        "skill-creator"
+      ]
+    },
+    {
+      "id": "dotnet-agent",
+      "repository": "pmcr-o/dotnet-agent",
+      "branch": "main",
+      "manifest": ".agents/plugins/marketplace.json",
+      "authority": "integration-mirror",
+      "status": "verified",
+      "upstream": {
+        "repository": "dotnet/skills",
+        "branch": "main",
+        "authority": "upstream-source-of-truth"
+      },
+      "pluginCount": 20,
+      "plugins": [
+        "dotnet",
+        "dotnet-advanced",
+        "dotnet-ai",
+        "dotnet-aspnetcore",
+        "dotnet-blazor",
+        "dotnet-data",
+        "dotnet-diag",
+        "dotnet-experimental",
+        "dotnet-maui",
+        "dotnet-msbuild",
+        "dotnet-nuget",
+        "dotnet-repo-authoring",
+        "dotnet-template-engine",
+        "dotnet-test",
+        "dotnet-test-migration",
+        "dotnet-upgrade",
+        "dotnet-winforms",
+        "dotnet-workflows",
+        "dotnet11",
+        "pmcro-dotnet"
+      ]
+    },
+    {
+      "id": "governance-agent",
+      "repository": "pmcr-o/governance-agent",
+      "branch": "main",
+      "manifest": ".agents/plugins/marketplace.json",
+      "authority": "external",
+      "status": "verified",
+      "pluginCount": 1,
+      "plugins": [
+        "pmcro-governance"
+      ]
+    }
+  ]
+}
