@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pmcro.dev/contracts/marketplace-federation-registry.schema.json",
+  "title": "Marketplace Federation Registry",
+  "type": "object",
+  "required": ["schemaVersion", "kind", "controlPlane", "policy", "marketplaces"],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "kind": { "const": "MarketplaceFederationRegistry" },
+    "controlPlane": {
+      "type": "object",
+      "required": ["repository", "compositionHost", "lifecycle", "supportedRuntimes"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "compositionHost": { "type": "string", "minLength": 1 },
+        "agentFramework": { "type": "string" },
+        "governance": { "type": "string" },
+        "lifecycle": { "type": "string", "minLength": 1 },
+        "supportedRuntimes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": ["discoverBeforeCreate", "duplicateCreation", "pmcroPhases"],
+      "properties": {
+        "discoverBeforeCreate": { "type": "boolean" },
+        "duplicateCreation": { "enum": ["deny", "allow"] },
+        "childAgentsMayRunFullCycles": { "type": "boolean" },
+        "authoritativeAuditOwner": { "type": "string" },
+        "pmcroPhases": {
+          "type": "array",
+          "const": ["orchestrate", "plan", "make", "check", "reflect"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "marketplaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "repository",
+          "branch",
+          "manifest",
+          "authority",
+          "status",
+          "pluginCount",
+          "plugins"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "repository": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+          "branch": { "type": "string", "minLength": 1 },
+          "manifest": { "type": "string", "minLength": 1 },
+          "authority": {
+            "enum": ["external", "integration-mirror", "local"]
+          },
+          "status": {
+            "enum": ["verified", "discovered", "planned", "blocked"]
+          },
+          "upstream": {
+            "type": "object",
+            "required": ["repository", "branch", "authority"],
+            "properties": {
+              "repository": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+              "branch": { "type": "string", "minLength": 1 },
+              "authority": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          },
+          "pluginCount": { "type": "integer", "minimum": 0 },
+          "plugins": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

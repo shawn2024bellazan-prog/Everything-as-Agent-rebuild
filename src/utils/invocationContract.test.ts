@@ -73,3 +73,26 @@ test('only completed runs list the call as executed', () => {
   assert.equal(buildInvocationResult(runWith('FAILED'), sk).executionRecord.executedCalls.length, 0);
   assert.equal(buildInvocationResult(runWith('CANCELLED', { cancelReason: 'killed' }), sk).result.reason, 'killed');
 });
+
+test('every invocation emits plugin, skill, and concrete function provenance', () => {
+  const created = buildDynamicSkillDefinition({
+    id: 'workflow-dispatch',
+    sourceNamespace: 'pmcr-o/github-agent',
+    summary: 'dispatch workflow',
+    trigger: 'workflow_dispatch',
+    runtimeTarget: 'github-actions',
+    ollamaModel: 'qwen2.5-coder:7b',
+    githubRepo: 'pmcr-o/skills',
+    workflowFile: 'skill.yml',
+    timeoutMs: 15000,
+    requiresApprovalGate: true,
+  });
+  assert.ok(created.ok, 'skill fixture must build');
+  if (!created.ok) return;
+
+  const out = buildInvocationResult(runWith('COMPLETED'), created.skill);
+  assert.equal(out.invocation.serviceRef, 'plugin://github-agent');
+  assert.equal(out.intent.skillsToExecute[0].skillRef, 'skill://github-agent/workflow-dispatch');
+  assert.equal(out.intent.callsToMake[0].target, 'pmcr-o/skills/skill.yml');
+  assert.equal(out.intent.callsToMake[0].operation, 'prepare-workflow-dispatch');
+});
