@@ -69,6 +69,19 @@ const DISPOSITION: Record<DynamicSkillRun['status'], Disposition> = {
   CANCELLED: 'halt',
 };
 
+function pluginNameFromSourceNamespace(sourceNamespace: string) {
+  const segments = sourceNamespace.split('/').map((segment) => segment.trim()).filter(Boolean);
+  return segments.at(-1) ?? sourceNamespace;
+}
+
+function capabilityRefs(skill: DynamicSkillDefinition) {
+  const pluginName = pluginNameFromSourceNamespace(skill.sourceNamespace);
+  return {
+    pluginRef: `plugin://${pluginName}`,
+    skillRef: `skill://${pluginName}/${skill.id}`,
+  };
+}
+
 function describeCall(skill: DynamicSkillDefinition) {
   if (skill.runtimeTarget === 'github-actions') {
     return { kind: 'workflow' as const, target: `${skill.githubRepo}/${skill.workflowFile}`, operation: 'prepare-workflow-dispatch' };
@@ -93,6 +106,7 @@ export function buildInvocationResult(
   const call = describeCall(skill);
   const gated = skill.policy.requiresApprovalGate;
   const completed = run.status === 'COMPLETED';
+  const capability = capabilityRefs(skill);
   return {
     contractVersion: INVOCATION_RESULT_VERSION,
     invocation: {
@@ -101,7 +115,7 @@ export function buildInvocationResult(
       cycleId: options.cycleId ?? `cycle-${run.runId}`,
       runId: run.runId,
       agentRef: '@control-plane',
-      serviceRef: null,
+      serviceRef: capability.pluginRef,
       nestedTrailRef: null,
     },
     agent: { role: 'maker', status: AGENT_STATUS[run.status], summary: (run.output ?? '').slice(0, 240) },
@@ -114,7 +128,7 @@ export function buildInvocationResult(
       operatorOverride: null,
     },
     intent: {
-      skillsToExecute: [{ skillRef: skill.id, purpose: skill.summary || skill.id, argumentsRef: null }],
+      skillsToExecute: [{ skillRef: capability.skillRef, purpose: skill.summary || skill.id, argumentsRef: null }],
       callsToMake: [
         {
           callId,
